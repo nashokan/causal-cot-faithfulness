@@ -1,2 +1,5 @@
 pyyaml>=6.0
 pandas>=2.0
+
+# GPU only. Not needed for the mock backend or the tests.
+# vllm>=0.8.5
