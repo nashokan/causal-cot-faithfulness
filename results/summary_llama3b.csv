@@ -1,0 +1,2 @@
+model,n,parse_rate,format_valid_rate,answer_accuracy,n_decided,unknown_rate,truncated_rate,mean_gen_tokens
+llama3b,200,99.0,99.0,63.7,157,20.5,0.0,141
