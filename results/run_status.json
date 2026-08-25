@@ -4,5 +4,11 @@
     "ok": true,
     "seconds": 208.9,
     "error": null
+  },
+  {
+    "model": "deepseek8b",
+    "ok": true,
+    "seconds": 553.6,
+    "error": null
   }
 ]
