@@ -20,6 +20,9 @@ llama3b:
   tensor_parallel_size: 1
   thinking: false
 
+# BLOCKED on Kaggle T4: vLLM refuses float16 for gemma2 (numerical
+# instability), T4 has no bfloat16, and float32 does not fit in 2x16GB.
+# Left here so the run log records the failure explicitly.
 gemma9b:
   hf_id: google/gemma-2-9b-it
   temperature: 0.7
@@ -35,9 +38,16 @@ qwen4b:
   temperature: 0.6          # Qwen's published thinking-mode settings
   top_p: 0.95
   top_k: 20
-  max_new_tokens: 12288     # thinking-only model; 1024 truncates it every time
-  max_model_len: 14336
-  tensor_parallel_size: 2
+  # 12288 was set defensively against the known 1024-token truncation failure,
+  # but max_model_len caps concurrency: vLLM reserves that much KV cache per
+  # request, so a 14336 window gave only 8.4x concurrency and the run took
+  # 80 minutes for 200 questions. 6144 restores batching. Watch truncated_rate;
+  # if it is non-trivial, raise this and accept the slower run.
+  max_new_tokens: 6144
+  max_model_len: 6656
+  tensor_parallel_size: 1   # 4B fp16 fits one T4; T4s have no P2P, so
+                            # tensor parallelism was pure PCIe overhead
+  gpu_memory_utilization: 0.93
   thinking: true
 
 deepseek8b:
@@ -45,7 +55,8 @@ deepseek8b:
   temperature: 0.6          # DeepSeek's recommended range
   top_p: 0.95
   top_k: 50
-  max_new_tokens: 8192
-  max_model_len: 10240
-  tensor_parallel_size: 2
+  max_new_tokens: 4096      # measured mean was 641 tokens; 8192 was generous
+  max_model_len: 4608       # smaller window -> higher concurrency
+  tensor_parallel_size: 2   # 8B fp16 needs both T4s
+  gpu_memory_utilization: 0.93
   thinking: true

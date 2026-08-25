@@ -150,11 +150,41 @@ format violation would score every thinking model at zero.
 
 ## Running
 
-Test the whole pipeline on CPU first. No GPU, no quota.
+One command does everything: runs every model, builds a PDF report, and
+pushes results to the `results` branch after each model.
+
+```bash
+python scripts/run_all.py
+```
+
+Results survive a session wipe. Kaggle recycles sessions without warning and
+deletes /kaggle/working when it does, so `run_all.py` commits and force-pushes
+`results/` to a dedicated branch after every single model rather than at the
+end. Rerunning the same command pulls that branch first, skips models that
+already have results, and continues from where it stopped. A model that fails
+is recorded in the report and does not stop the others.
+
+This needs `GH_TOKEN` in the environment: a GitHub personal access token with
+`repo` scope, stored as a Kaggle secret. Without it the run still works, but
+results live only on the Kaggle disk.
+
+Outputs land in `results/`:
+
+```
+prompt_stability_report.pdf   the report
+raw_<model>.jsonl             every generation, full text
+summary_<model>.csv           metrics
+failures_<model>.csv          format failure reasons
+run_status.json               what ran, how long, what failed
+```
+
+### Testing first
+
+Test the whole pipeline on CPU. No GPU, no quota.
 
 ```bash
 python tests/test_parsing.py
-python scripts/run_prompt_stability.py --model llama3b --backend mock
+python scripts/run_all.py --models llama3b --backend mock --no-pull
 ```
 
 The mock backend generates synthetic responses covering every failure mode. If

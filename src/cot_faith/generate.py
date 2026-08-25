@@ -41,6 +41,7 @@ class ModelSpec:
             max_model_len=cfg["max_model_len"],
             thinking=cfg["thinking"],
             tensor_parallel_size=tp_override or cfg.get("tensor_parallel_size", 1),
+            gpu_memory_utilization=cfg.get("gpu_memory_utilization", 0.90),
         )
 
 
